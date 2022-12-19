@@ -1,32 +1,42 @@
-import throttle from 'lodash.throttle';
-
-const STORAGE_KEY = 'feedback-form-state';
+import throttle from "lodash.throttle";
 
 const form = document.querySelector('.feedback-form');
-form.addEventListener('input', throttle(onFormInput, 500));
-form.addEventListener('submit', onFormSubmit);
-
+const STORAGE_KEY = 'feedback-form-state';
 const formData = {};
 
-function onFormInput(e) {
-  formData[e.target.name] = e.target.value;
+updateForm();
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-}
+form.addEventListener('input', throttle(onFormInput,500));
+form.addEventListener('submit', onFormSubmit);
+
+function onFormInput(e) {
+    formData[e.target.name] = e.target.value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+};
 
 function onFormSubmit(e) {
-  console.log(JSON.parse(localStorage.getItem(STORAGE_KEY)));
-  e.preventDefault();
-  e.currentTarget.reset();
-  localStorage.removeItem(STORAGE_KEY);
-}
+    e.preventDefault();
+    const {
+        elements: { email, message }
+      } = e.target;
+      
+      if (email.value === "" || message.value === "") {
+        return window.alert("Please fill in all the fields!");
+      };
+    console.log(JSON.parse(localStorage.getItem(STORAGE_KEY)));
+    form.reset();
+    localStorage.removeItem(STORAGE_KEY);
+    
+};
 
-(function formDataLocalStorage() {
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  const email = document.querySelector('.feedback-form input');
-  const message = document.querySelector('.feedback-form textarea');
-  if (saved) {
-    email.value = saved.email;
-    message.value = saved.message;
-  }
-})();
+
+function updateForm() {
+    if (localStorage.getItem(STORAGE_KEY) === null) {
+return
+    }
+    const savedForm = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      Object.entries(savedForm).forEach(([name,value]) => {
+        formData[name] = value;
+        form.elements[name].value = value;
+      });
+};
